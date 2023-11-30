@@ -1,13 +1,41 @@
 import Note from './components/Note'
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
-const App = (props) => {
-  const [notes, setNotes] = useState(props.notes)
+const App = () => {
+  const [notes, setNotes] = useState([])
 
   const [newNote, setNewNote] = useState(
     'a new note...'
   )
   const [showAll, setShowAll] = useState(true)
+
+  //const promise = axios.get('http://localhost:3001/notes')
+  //console.log("la promesa bro", promise)
+
+  const hook = () => {
+    /*console.log('effect')
+    axios
+      .get('http://localhost:3001/notes')
+      .then(response => {
+        console.log('promise fulfilled')
+        setNotes(response.data)
+      })*/
+      console.log('effect')
+
+      const eventHandler = response => {
+        console.log('promise fulfilled')
+        setNotes(response.data)
+      }
+    
+      const promise = axios.get('http://localhost:3001/notes')
+      promise.then(eventHandler)
+  }
+  //puedes meter la función directo en el hook en lugar de definir eso como una variable.
+  useEffect(hook, [])
+
+  console.log('render', notes.length, 'notes')
+
 
   const addNote = (event) => {
     event.preventDefault()

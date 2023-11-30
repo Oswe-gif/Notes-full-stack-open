@@ -21,5 +21,5 @@ const notes = [
 ]
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <App notes={notes} />
+ <App notes />
 )
