@@ -1,8 +1,10 @@
 import Note from './components/Note'
 import { useState, useEffect } from 'react'
 import noteService from './services/notes'
+import loginService from './services/login'
 import Notification from './components/Notification'
 import Footer from './components/Footer'
+
 
 const App = () => {
   const [notes, setNotes] = useState([])
@@ -11,8 +13,29 @@ const App = () => {
     'a new note...'
   )
   const [showAll, setShowAll] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('some error happened...')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [username, setUsername] = useState('') 
+  const [password, setPassword] = useState('')
+  const [user, setUser] = useState(null)
 
+
+  const handleLogin = async (event) => {
+    event.preventDefault()
+    
+    try {
+      const user = await loginService.login({
+        username, password,
+      })
+      setUser(user)
+      setUsername('')
+      setPassword('')
+    } catch (exception) {
+      setErrorMessage('Wrong credentials')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
+  }
 
   //const promise = axios.get('http://localhost:3001/notes')
   //console.log("la promesa bro", promise)
@@ -55,6 +78,14 @@ const App = () => {
 
       noteService.getAll().then(data =>{
         setNotes(data);
+      }).catch(error =>{
+        console.log(error)
+        setErrorMessage(
+          `error '${error.code}'`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       });
   }
   //puedes meter la función directo en el hook en lugar de definir eso como una variable.
@@ -90,10 +121,52 @@ const App = () => {
   ? notes
   : notes.filter(note => note.important === true)
 
+  const loginForm = () => (
+    <form onSubmit={handleLogin}>
+      <div>
+        username
+          <input
+          type="text"
+          value={username}
+          name="Username"
+          onChange={({ target }) => setUsername(target.value)}
+        />
+      </div>
+      <div>
+        password
+          <input
+          type="password"
+          value={password}
+          name="Password"
+          onChange={({ target }) => setPassword(target.value)}
+        />
+      </div>
+      <button type="submit">login</button>
+    </form>      
+  )
+
+  const noteForm = () => (
+    <form onSubmit={addNote}>
+      <input
+        value={newNote}
+        onChange={handleNoteChange}
+      />
+      <button type="submit">save</button>
+    </form>  
+  )
+
   return (
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
+      {user === null && loginForm()}
+      {user !== null && 
+        <div>
+          <p>{user.name} logged in</p>
+          {noteForm()}
+        </div>
+      }
+      
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all' }
@@ -104,10 +177,6 @@ const App = () => {
           <Note key={note.id} note={note} toggleImportance={() => toggleImportanceOf(note.id)}/>
         )}
       </ul>
-      <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange}/>
-        <button type="submit">save</button>
-      </form> 
       <Footer/>
     </div>
   )
