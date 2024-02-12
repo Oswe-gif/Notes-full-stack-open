@@ -26,6 +26,11 @@ const App = () => {
       const user = await loginService.login({
         username, password,
       })
+      console.log('data del login',user)
+      noteService.setToken(user.token)
+      window.localStorage.setItem(
+        'loggedNoteappUser', JSON.stringify(user)
+      )// guardamos la respuesta del back que contiene el token, lo guardamos en cache para cuando reinicie la pagina no deba volver a iniciar sesión--> Usamos JSON.stringify() porque el setItem() no reconoce objetos, así que lo volvemos json.  
       setUser(user)
       setUsername('')
       setPassword('')
@@ -91,6 +96,15 @@ const App = () => {
   //puedes meter la función directo en el hook en lugar de definir eso como una variable.
   useEffect(hook, [])
 
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      noteService.setToken(user.token)
+    }
+  }, []) //apenas se reinicie la pagina revisamos el cache para ver si hay un token. Si el token existe, se realiza el inicio de sesión automatico
+
   console.log('render', notes.length, 'notes')
 
 
@@ -103,7 +117,6 @@ const App = () => {
       //id: notes.length + 1, lo comento ya que es mejor dejar que el servidor genere identificadores para nuestros recursos
     }
 
-
     noteService
     .create(noteObject)
     .then(response => {
@@ -112,6 +125,7 @@ const App = () => {
     })
 
   }
+
   const handleNoteChange = (event) => {
     console.log(event.target.value)
     setNewNote(event.target.value)

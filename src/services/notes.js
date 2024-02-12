@@ -1,6 +1,12 @@
 import axios from 'axios'
 const baseUrl = '/api/notes'
 
+let token = null //private variable
+
+const setToken = newToken => {
+  token = `Bearer ${newToken}`
+}
+
 const getAll = () => {
   const request = axios.get(baseUrl)
   const nonExisting = {
@@ -12,9 +18,18 @@ const getAll = () => {
   return request.then(response => response.data.concat(nonExisting))
 }
 
-const create = newObject => {
-  return axios.post(baseUrl, newObject)
+const create = async newObject => {
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.post(baseUrl, newObject, config)
+  return response.data
 }
+
+/*const create = newObject => {
+  return axios.post(baseUrl, newObject)
+}*/
 
 const update = (id, newObject) => {
   const request = axios.put(`${baseUrl}/${id}`, newObject)
@@ -27,4 +42,4 @@ const update = (id, newObject) => {
   update: update 
 }*/
 //se puede expotar arriba o como esta abajo, Dado que los nombres de las claves y las variables asignadas son los mismos, podemos escribir la definición del objeto con una sintaxis más compacta
-export default {getAll, create, update}
+export default {getAll, create, update, setToken}
